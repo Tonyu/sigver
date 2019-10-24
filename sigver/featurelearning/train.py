@@ -224,7 +224,8 @@ def train_epoch(train_loader: torch.utils.data.DataLoader,
             callback.scalar('class_loss', iteration, class_loss.detach())
 
             pred = logits.argmax(1)
-            acc = y[yforg == 0].eq(pred).float().mean()
+            if args.loss_type == 'L1': acc = y.eq(pred).float().mean()
+            else: acc = y[yforg == 0].eq(pred[yforg == 0]).float().mean()
             callback.scalar('train_acc', epoch + (step / n_steps), acc.detach())
             if args.forg:
                 forg_pred = forg_logits > 0
@@ -302,7 +303,7 @@ def test(val_loader: torch.utils.data.DataLoader,
     val_forg_loss = np.mean(val_forg_losses) if len(val_forg_losses) > 0 else np.nan
     val_forg_acc= np.mean(val_forg_accs) if len(val_forg_accs) > 0 else np.nan
 
-    return val_acc.item(), val_loss.item(), val_forg_acc.item(), val_forg_loss.item()
+    return val_acc, val_loss, val_forg_acc, val_forg_loss
 
 
 def main(args):
